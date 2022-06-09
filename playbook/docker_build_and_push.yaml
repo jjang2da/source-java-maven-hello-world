@@ -1,9 +1,18 @@
-- name: Docker Image Build
+- name: Docker Image Build and Push
   hosts: ansible_host
+  gather_facts: false
+
+  tasks:
+    - command: docker image build -t jjang2da/cicdproject java-hello-world/
+    - command: docker login -u jjang2da -p "{{ lookup('env', 'PASS') }}"
+    - command: docker push jjang2da/cicdproject
+    - command: docker logout
+
+- name: Docker Run
+  hosts: docker_host
   gather_facts: false
   
   tasks:
-    - command: docker image build -t java-hello-world java-hello-world/
     - command: docker container rm -f java-hello-world
       ignore_errors: yes
-    - command: docker container run --name java-hello-world -d -p 8080:8080 java-hello-world
+    - command: docker container run -d -p 8080:8080 --name java-hello-world jjang2da/cicdproject
